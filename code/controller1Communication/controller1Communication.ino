@@ -12,17 +12,20 @@ uint8_t broadcast_address[] = {D4, 8A, FC, C8, 47, 24};
 String success;
 
 //The pin connected to the button
-int button_pin
+int button_pin = 36;
 
-// The status of the button. 1 if button pressed. 0 if button not pressed.
-int outgoing_button
+//The pin connected to the LED
+int led_pin;
 
-// The status of the other ESP32's button. 1 if button pressed. 0 if button not pressed
-int incoming_button 
+// The status of the button. true if button pressed. false if button not pressed.
+bool outgoing_button;
+
+// The status of the other ESP32's button. true if button pressed. false if button not pressed
+bool incoming_button;
 
 //Structure for any data being sent or recieved
 typedef struct struct_message {
-  int button_status;
+  bool button_status;
 } struct_message;
 
 //struct_message to hold outgoing button data
@@ -51,6 +54,7 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   Serial.print("Bytes received: ");
   Serial.println(len);
   incoming_button = incoming_reading.button_status;
+  setLED(incoming_button)
 }
  
 void setup() {
@@ -59,6 +63,9 @@ void setup() {
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
+
+  //Initialise pins
+  pinMode(button_pin, INPUT);
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
@@ -86,7 +93,7 @@ void setup() {
  
 void loop() { 
   // Set values to send
-  outgoing_button = digitalRead(button_pin);
+  outgoing_button = readButton()
   outgoing_data.button_status = outgoing_button;
 
   // Send message via ESP-NOW
@@ -99,4 +106,12 @@ void loop() {
     Serial.println("Error sending the data");
   }
   delay(2000);
+}
+
+bool readButton(){
+  return digitalRead(button_pin);
+}
+
+void setLED(bool state){
+  digitalWrite(button_pin, state);
 }

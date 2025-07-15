@@ -1,14 +1,20 @@
-#include <WiFi.h>
-#include <esp_wifi.h>
-
-int pin = D4;
+int pin = 36;
 
 
 void setup(){
-  
+  Serial.begin(9600);
+  pinMode(pin, INPUT);
 }
  
 void loop(){
-  analogWrite(pin, 255);
+  Serial.println(readButton());
   
+}
+
+bool readButton(){
+  return digitalRead(pin);
+}
+
+void setLED(bool state){
+  digitalWrite(pin, state);
 }
