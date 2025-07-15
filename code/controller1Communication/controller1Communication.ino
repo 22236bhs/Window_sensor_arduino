@@ -3,21 +3,38 @@
 
 #include <Wire.h>
 
-uint8_t broadcastAddress[] = {D4, 8A, FC, C8, 47, 24};
+//Variable Declaration
+
+//MAC Address of the other ESP32
+uint8_t broadcast_address[] = {D4, 8A, FC, C8, 47, 24};
 
 // Variable to store if sending data was successful
 String success;
 
+//The pin connected to the button
+int button_pin
+
 // The status of the button. 1 if button pressed. 0 if button not pressed.
-int buttonStatus
+int outgoing_button
 
 // The status of the other ESP32's button. 1 if button pressed. 0 if button not pressed
-int incomingButton;
+int incoming_button 
 
-esp_now_peer_info_t peerInfo;
+//Structure for any data being sent or recieved
+typedef struct struct_message {
+  int button_status;
+} struct_message;
+
+//struct_message to hold outgoing button data
+struct_message outgoing_data;
+
+//struct_message to hold incoming button reading
+struct_message incoming_reading;
+
+esp_now_peer_info_t peer_info;
 
 // Callback when data is sent
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
   if (status ==0){
@@ -29,31 +46,16 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 // Callback when data is received
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
+void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
+  memcpy(&incoming_reading, incoming_data, sizeof(incoming_reading ));
   Serial.print("Bytes received: ");
   Serial.println(len);
-  incomingTemp = incomingReadings.temp;
-  incomingHum = incomingReadings.hum;
-  incomingPres = incomingReadings.pres;
+  incoming_button = incoming_reading.button_status;
 }
  
 void setup() {
   // Init Serial Monitor
-  Serial.begin(115200);
-
-  // Init BME280 sensor
-  bool status = bme.begin(0x76);  
-  if (!status) {
-    Serial.println("Could not find a valid BME280 sensor, check wiring!");
-    while (1);
-  }
-
-  // Init OLED display
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;);
-  }
+  Serial.begin(9600);
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -64,34 +66,31 @@ void setup() {
     return;
   }
 
-  // Once ESPNow is successfully Init, we will register for Send CB to
-  // get the status of Trasnmitted packet
-  esp_now_register_send_cb(OnDataSent);
+  // Once ESPNow is successfully Init, register for Send CB to
+  // get the status of Transmitted packet
+  esp_now_register_send_cb(onDataSent);
   
   // Register peer
-  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 0;  
-  peerInfo.encrypt = false;
+  memcpy(peer_info.peer_addr, broadcast_address, 6);
+  peer_info.channel = 0;  
+  peer_info.encrypt = false;
   
   // Add peer        
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+  if (esp_now_add_peer(&peer_info) != ESP_OK){
     Serial.println("Failed to add peer");
     return;
   }
   // Register for a callback function that will be called when data is received
-  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
+  esp_now_register_recv_cb(esp_now_recv_cb_t(onDataRecv));
 }
  
-void loop() {
-  getReadings();
- 
+void loop() { 
   // Set values to send
-  BME280Readings.temp = temperature;
-  BME280Readings.hum = humidity;
-  BME280Readings.pres = pressure;
+  outgoing_button = digitalRead(button_pin);
+  outgoing_data.button_status = outgoing_button;
 
   // Send message via ESP-NOW
-  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &BME280Readings, sizeof(BME280Readings));
+  esp_err_t result = esp_now_send(broadcast_address, (uint8_t *) &outgoing_data, sizeof(outgoing_data));
    
   if (result == ESP_OK) {
     Serial.println("Sent with success");
@@ -99,50 +98,5 @@ void loop() {
   else {
     Serial.println("Error sending the data");
   }
-  updateDisplay();
-  delay(10000);
-}
-void getReadings(){
-  temperature = bme.readTemperature();
-  humidity = bme.readHumidity();
-  pressure = (bme.readPressure() / 100.0F);
-}
-
-void updateDisplay(){
-  // Display Readings on OLED Display
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 0);
-  display.println("INCOMING READINGS");
-  display.setCursor(0, 15);
-  display.print("Temperature: ");
-  display.print(incomingTemp);
-  display.cp437(true);
-  display.write(248);
-  display.print("C");
-  display.setCursor(0, 25);
-  display.print("Humidity: ");
-  display.print(incomingHum);
-  display.print("%");
-  display.setCursor(0, 35);
-  display.print("Pressure: ");
-  display.print(incomingPres);
-  display.print("hPa");
-  display.setCursor(0, 56);
-  display.print(success);
-  display.display();
-  
-  // Display Readings in Serial Monitor
-  Serial.println("INCOMING READINGS");
-  Serial.print("Temperature: ");
-  Serial.print(incomingReadings.temp);
-  Serial.println(" ºC");
-  Serial.print("Humidity: ");
-  Serial.print(incomingReadings.hum);
-  Serial.println(" %");
-  Serial.print("Pressure: ");
-  Serial.print(incomingReadings.pres);
-  Serial.println(" hPa");
-  Serial.println();
+  delay(2000);
 }
