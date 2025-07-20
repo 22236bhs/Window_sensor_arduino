@@ -1,5 +1,7 @@
+//Variable Declarations
+
 int button_pin = 36;
-int led_pin = 34;
+int led_pin = 32;
 
 
 void setup(){
