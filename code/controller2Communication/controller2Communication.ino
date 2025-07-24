@@ -6,7 +6,7 @@
 //Variable Declaration
 
 //MAC Address of the other ESP32 
-uint8_t broadcast_address[] = {0x08, 0xA6, 0xF7, 0xA8, 0x6C, 0xF8};
+uint8_t broadcast_address[] = {0xD4, 0x8A, 0xFC, 0xC8, 0x47, 0x24};
 
 // Variable to store if sending data was successful
 String success;
