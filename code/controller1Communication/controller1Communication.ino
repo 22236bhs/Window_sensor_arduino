@@ -6,7 +6,7 @@
 //Variable Declaration
 
 //MAC Address of the other ESP32 
-uint8_t broadcast_address[] = {0x08, 0xA6, 0xF7, 0xA8, 0x6C, 0xF8};
+uint8_t broadcast_address[] = {0x00, 0x4B, 0x12, 0x2E, 0x21, 0xDC};
 
 // Variable to store if sending data was successful
 String success;
@@ -37,7 +37,7 @@ struct_message incoming_reading;
 esp_now_peer_info_t peer_info;
 
 // Callback when data is sent
-void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void onDataSent(const wifi_tx_info_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
   if (status ==0){
@@ -107,7 +107,7 @@ void loop() {
   else {
     Serial.println("Error sending the data");
   }
-  delay(2000);
+  delay(1000);
 }
 
 bool readButton(){

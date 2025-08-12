@@ -1,6 +1,6 @@
 //Variable Declarations
 
-int button_pin = 36;
+int button_pin = 26;
 int led_pin = 32;
 
 

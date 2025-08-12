@@ -12,7 +12,7 @@ uint8_t broadcast_address[] = {0xD4, 0x8A, 0xFC, 0xC8, 0x47, 0x24};
 String success;
 
 //The pin connected to the button
-int button_pin = 36;
+int button_pin = 26;
 
 //The pin connected to the LED
 int led_pin = 32;
@@ -37,7 +37,7 @@ struct_message incoming_reading;
 esp_now_peer_info_t peer_info;
 
 // Callback when data is sent
-void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void onDataSent(const wifi_tx_info_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
   if (status ==0){
@@ -107,7 +107,7 @@ void loop() {
   else {
     Serial.println("Error sending the data");
   }
-  delay(2000);
+  delay(1000);
 }
 
 bool readButton(){
