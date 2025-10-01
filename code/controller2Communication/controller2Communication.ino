@@ -6,16 +6,19 @@
 //Variable Declaration
 
 //MAC Address of the other ESP32 
-uint8_t broadcast_address[] = {0xD4, 0x8A, 0xFC, 0xC8, 0x47, 0x24};
+uint8_t broadcast_address[] = {0x00, 0x4B, 0x12, 0x2E, 0x21, 0xDC};
 
 // Variable to store if sending data was successful
 String success;
 
 //The pin connected to the button
-int button_pin = 26;
+int button_pin = 25;
 
 //The pin connected to the LED
-int led_pin = 32;
+int led_pin = 33;
+
+//The pin powering the button
+int button_power_pin = 26;
 
 // The status of the button. true if button pressed. false if button not pressed.
 bool outgoing_button;
@@ -67,7 +70,9 @@ void setup() {
   //Initialise pins
   pinMode(button_pin, INPUT);
   pinMode(led_pin, OUTPUT);
+  pinMode(button_power_pin, OUTPUT);
   digitalWrite(led_pin, LOW);
+  digitalWrite(button_power_pin, HIGH);
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {

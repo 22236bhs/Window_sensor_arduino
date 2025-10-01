@@ -6,7 +6,7 @@
 //Variable Declaration
 
 //MAC Address of the other ESP32 
-uint8_t broadcast_address[] = {0x00, 0x4B, 0x12, 0x2E, 0x21, 0xDC};
+uint8_t broadcast_address[] = {0xD0, 0xEF, 0x76, 0x48, 0x1C, 0x3C};
 
 // Variable to store if sending data was successful
 String success;
@@ -15,7 +15,7 @@ String success;
 int button_pin = 36;
 
 //The pin connected to the LED
-int led_pin = 32;
+int led_pin = 5;
 
 // The status of the button. true if button pressed. false if button not pressed.
 bool outgoing_button;
