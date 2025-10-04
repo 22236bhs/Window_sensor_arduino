@@ -15,7 +15,7 @@ String success;
 int button_pin = 36;
 
 //The pin connected to the LED
-int led_pin = 5;
+int led_pin = 25;
 
 // The status of the button. true if button pressed. false if button not pressed.
 bool outgoing_button;
