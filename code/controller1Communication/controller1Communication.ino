@@ -1,7 +1,18 @@
 #include <esp_now.h>
 #include <WiFi.h>
-
 #include <Wire.h>
+#include <U8g2lib.h>
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+
+const int LCD_CLK = 27;
+const int LCD_DATA = 33;
+const int LCD_CS = 14;
+const int LCD_RST = 26;
+const int LCD_BLA = 25;
+
+U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, LCD_CLK, LCD_DATA, LCD_CS, LCD_RST);
 
 //Variable Declaration
 
@@ -22,6 +33,8 @@ bool outgoing_button;
 
 // The status of the other ESP32's button. true if button pressed. false if button not pressed
 bool incoming_button;
+
+bool previous_value = true;
 
 //Structure for any data being sent or recieved
 typedef struct struct_message {
@@ -54,7 +67,17 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   Serial.print("Bytes received: ");
   Serial.println(len);
   incoming_button = incoming_reading.button_status;
-  setLED(incoming_button);
+  if (incoming_button != previous_value){
+    u8g2.clear();
+    if (incoming_button){
+      LCDPrint("Closed");
+    }
+    else{
+      LCDPrint("Open");
+    }
+  }
+ 
+  previous_value = incoming_button;
 }
  
 void setup() {
@@ -64,10 +87,15 @@ void setup() {
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
 
+  u8g2.begin();
+  u8g2.setContrast(128);
+
   //Initialise pins
   pinMode(button_pin, INPUT);
   pinMode(led_pin, OUTPUT);
+  pinMode(LCD_BLA, OUTPUT);
   digitalWrite(led_pin, LOW);
+  digitalWrite(LCD_BLA, HIGH);
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
@@ -95,8 +123,7 @@ void setup() {
  
 void loop() { 
   // Set values to send
-  outgoing_button = readButton();
-  outgoing_data.button_status = outgoing_button;
+  outgoing_data.button_status = false;
 
   // Send message via ESP-NOW
   esp_err_t result = esp_now_send(broadcast_address, (uint8_t *) &outgoing_data, sizeof(outgoing_data));
@@ -116,4 +143,13 @@ bool readButton(){
 
 void setLED(bool state){
   digitalWrite(led_pin, state);
+}
+
+void LCDPrint(char *text){
+  u8g2.firstPage();
+  do {
+    u8g2.setFont(u8g2_font_ncenB14_tr);
+    u8g2.drawStr(0, 14, text);
+    u8g2.drawFrame(0, 0, 128, 64);
+  } while (u8g2.nextPage());
 }

@@ -1,25 +1,34 @@
-#include <U8g2lib.h>
+  #include <U8g2lib.h>
 
-const int LCD_CLK = 14;  // R/W on screen (clock)
-const int LCD_DATA = 13; // RS on screen (data)
-const int LCD_CS = 27;   // E on screen (chip select)
-const int LCD_RST = 26;  // RST on screen (reset)
-const int LCD_BLA = 25;  // backlight control (optional)
+  #ifdef U8X8_HAVE_HW_SPI
+  #include <SPI.h>
+  #endif
+
+const int LCD_CLK = 27;  //18
+const int LCD_DATA = 33; //23
+const int LCD_CS = 14;    //5
+const int LCD_RST = 26;  //26
+const int LCD_BLA = 25;  //25
+
+int count = 0;
 
 U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, LCD_CLK, LCD_DATA, LCD_CS, LCD_RST);
 
 void setup() {
-  // backlight pin if you want manual control
-  pinMode(LCD_BLA, OUTPUT);
-  digitalWrite(LCD_BLA, HIGH); // turn on backlight
-
   u8g2.begin();
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(0, 10, "Hello XC4617!");
-  u8g2.sendBuffer();
+  pinMode(LCD_BLA, OUTPUT);
+  digitalWrite(LCD_BLA, HIGH);
+  u8g2.setContrast(128);
 }
 
 void loop() {
-  // nothing else required — U8g2 handles transfers
+  u8g2.firstPage();
+  do {
+    u8g2.setFont(u8g2_font_ncenB14_tr);
+    u8g2.drawStr(0, 14, "Hello ESP32!");
+    u8g2.drawFrame(0, 0, 128, 64);
+  } while (u8g2.nextPage());
+  delay(1000);
+  u8g2.clear();
+  delay(1000);
 }
