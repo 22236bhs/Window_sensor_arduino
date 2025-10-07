@@ -34,13 +34,13 @@ bool outgoing_button;
 // The status of the other ESP32's button. true if button pressed. false if button not pressed
 bool incoming_button;
 
-bool previous_value = true;
+int previous_value = 2;
 
-bool recieved = false;
+bool received = false;
 
-int not_recieved_count = 0;
+int not_received_count = 0;
 
-//Structure for any data being sent or recieved
+//Structure for any data being sent or received
 typedef struct struct_message {
   bool button_status;
 } struct_message;
@@ -71,18 +71,18 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   Serial.print("Bytes received: ");
   Serial.println(len);
   incoming_button = incoming_reading.button_status;
-  recieved = true;
+  //Serial.println("Incoming: " + String(incoming_button));
+  received = true;
   if (incoming_button != previous_value){
     u8g2.clear();
-    if (incoming_button){
+    if (incoming_button == 1){
       LCDPrint("Closed");
     }
-    else{
+    else if (incoming_button == 0){
       LCDPrint("Open");
     }
-    print(incoming_button);
+    
   }
- 
   previous_value = incoming_button;
 }
  
@@ -141,15 +141,21 @@ void loop() {
     Serial.println("Error sending the data");
   }
 
-  if (recieved){
-    recieved = false;
-    not_recieved_count = false;
+  Serial.println("Received: " + String(received));
+  Serial.println("Count: " + String(not_received_count));
+
+  if (received){
+    received = false;
+    not_received_count = 0;
   }
   else{
-    not_recieved_count++;
+    not_received_count++;
   }
-  if (not_recieved_count >= 5){
+  if (not_received_count >= 5){
     LCDPrint("No Response");
+    not_received_count = 5;
+    previous_value = 2;
+
   }
   delay(1000);
 }
@@ -167,6 +173,5 @@ void LCDPrint(char *text){
   do {
     u8g2.setFont(u8g2_font_ncenB14_tr);
     u8g2.drawStr(0, 14, text);
-    u8g2.drawFrame(0, 0, 128, 64);
   } while (u8g2.nextPage());
 }
