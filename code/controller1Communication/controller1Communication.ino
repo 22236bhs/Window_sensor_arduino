@@ -36,6 +36,10 @@ bool incoming_button;
 
 bool previous_value = true;
 
+bool recieved = false;
+
+int not_recieved_count = 0;
+
 //Structure for any data being sent or recieved
 typedef struct struct_message {
   bool button_status;
@@ -67,6 +71,7 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   Serial.print("Bytes received: ");
   Serial.println(len);
   incoming_button = incoming_reading.button_status;
+  recieved = true;
   if (incoming_button != previous_value){
     u8g2.clear();
     if (incoming_button){
@@ -75,6 +80,7 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
     else{
       LCDPrint("Open");
     }
+    print(incoming_button);
   }
  
   previous_value = incoming_button;
@@ -133,6 +139,17 @@ void loop() {
   }
   else {
     Serial.println("Error sending the data");
+  }
+
+  if (recieved){
+    recieved = false;
+    not_recieved_count = false;
+  }
+  else{
+    not_recieved_count++;
+  }
+  if (not_recieved_count >= 5){
+    LCDPrint("No Response");
   }
   delay(1000);
 }
