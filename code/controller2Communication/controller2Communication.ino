@@ -12,19 +12,10 @@ uint8_t broadcast_address[] = {0x00, 0x4B, 0x12, 0x2E, 0x21, 0xDC};
 String success;
 
 //The pin connected to the button
-int button_pin = 25;
-
-//The pin connected to the LED
-int led_pin = 33;
-
-//The pin powering the button
-int button_power_pin = 26;
+int reed_pin = 25;
 
 // The status of the button. true if button pressed. false if button not pressed.
 bool outgoing_button;
-
-// The status of the other ESP32's button. true if button pressed. false if button not pressed
-bool incoming_button;
 
 //Structure for any data being sent or recieved
 typedef struct struct_message {
@@ -33,9 +24,6 @@ typedef struct struct_message {
 
 //struct_message to hold outgoing button data
 struct_message outgoing_data;
-
-//struct_message to hold incoming button reading
-struct_message incoming_reading;
 
 esp_now_peer_info_t peer_info;
 
@@ -50,15 +38,6 @@ void onDataSent(const wifi_tx_info_t *mac_addr, esp_now_send_status_t status) {
     success = "Delivery Fail :(";
   }
 }
-
-// Callback when data is received
-void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
-  memcpy(&incoming_reading, incoming_data, sizeof(incoming_reading ));
-  Serial.print("Bytes received: ");
-  Serial.println(len);
-  incoming_button = incoming_reading.button_status;
-  setLED(incoming_button);
-}
  
 void setup() {
   // Init Serial Monitor
@@ -68,11 +47,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
 
   //Initialise pins
-  pinMode(button_pin, INPUT);
-  pinMode(led_pin, OUTPUT);
-  pinMode(button_power_pin, OUTPUT);
-  digitalWrite(led_pin, LOW);
-  digitalWrite(button_power_pin, HIGH);
+  pinMode(reed_pin, INPUT);
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
@@ -94,8 +69,6 @@ void setup() {
     Serial.println("Failed to add peer");
     return;
   }
-  // Register for a callback function that will be called when data is received
-  esp_now_register_recv_cb(esp_now_recv_cb_t(onDataRecv));
 }
  
 void loop() { 
@@ -116,9 +89,5 @@ void loop() {
 }
 
 bool readButton(){
-  return digitalRead(button_pin);
-}
-
-void setLED(bool state){
-  digitalWrite(led_pin, state);
+  return digitalRead(reed_pin);
 }
