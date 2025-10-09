@@ -66,7 +66,7 @@ void setup() {
   // Init Serial Monitor
   Serial.begin(9600);
   u8g2.begin();
-  u8g2.setContrast(128);
+  u8g2.setContrast(50);
   delay(4000);
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
