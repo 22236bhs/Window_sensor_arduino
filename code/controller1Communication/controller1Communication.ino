@@ -10,7 +10,6 @@ const int LCD_CLK = 27;
 const int LCD_DATA = 25;
 const int LCD_CS = 33;
 const int LCD_RST = 26;
-const int LCD_BLA = 14;
 
 U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, LCD_CLK, LCD_DATA, LCD_CS, LCD_RST);
 
@@ -71,10 +70,6 @@ void setup() {
   delay(4000);
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
-
-  //Initialise pins
-  pinMode(LCD_BLA, OUTPUT);
-  digitalWrite(LCD_BLA, HIGH);
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
