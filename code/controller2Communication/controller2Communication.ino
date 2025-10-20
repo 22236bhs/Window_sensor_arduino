@@ -88,6 +88,7 @@ void loop() {
   delay(1000);
 }
 
+// Read the value of the connected reed switch
 bool readButton(){
   return digitalRead(reed_pin);
 }

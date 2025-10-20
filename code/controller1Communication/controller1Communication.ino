@@ -24,10 +24,13 @@ String success;
 // The status of the other ESP32's button. true if button pressed. false if button not pressed
 bool incoming_button;
 
+// Previous value of the incoming sensor value
 int previous_value = 2;
 
+// True if data has been recently recieved
 bool received = false;
 
+// The amount of times that no data has been recieved in a row
 int not_received_count = 0;
 
 //Structure for any data being sent or received
@@ -46,8 +49,8 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   memcpy(&incoming_reading, incoming_data, sizeof(incoming_reading ));
   Serial.print("Bytes received: ");
   Serial.println(len);
+  // Change what is displayed on the LCD to the sensor value if it is different to the last recieved sensor value
   incoming_button = incoming_reading.button_status;
-  //Serial.println("Incoming: " + String(incoming_button));
   received = true;
   if (incoming_button != previous_value){
     u8g2.clear();
@@ -65,6 +68,7 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
 void setup() {
   // Init Serial Monitor
   Serial.begin(9600);
+  // Initialise the LCD and set its contrast
   u8g2.begin();
   u8g2.setContrast(50);
   delay(4000);
@@ -92,7 +96,7 @@ void setup() {
 }
  
 void loop() { 
-
+  // If no data has been recieved, increase the not recieved count
   if (received){
     received = false;
     not_received_count = 0;
@@ -100,6 +104,7 @@ void loop() {
   else{
     not_received_count++;
   }
+  // If there no data has been recieved for a while, write "No Response" onto the LCD screen.
   if (not_received_count >= 5){
     LCDPrint("No Response");
     not_received_count = 5;
@@ -109,6 +114,7 @@ void loop() {
   delay(1000);
 }
 
+// Function to print text onto the connected LCD
 void LCDPrint(char *text){
   u8g2.firstPage();
   do {
